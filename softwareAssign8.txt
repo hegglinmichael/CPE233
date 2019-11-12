@@ -1,0 +1,63 @@
+#Our team wrote an interrupt driven program that will turn the LEDs on or off. 
+#Every interrupt will alternately turns on/off the LEDs. The LEDs that change are the ones
+# corresponding to the value on the switches. If the switch for a specific bit is 1, 
+#the corresponding bit on the LEDs will change from on to off or off to on.
+
+.CSEG
+.ORG	0x01
+
+main:
+	sei
+loop:
+	brn loop
+
+int_handler:
+	in		r0, 0x9A
+	in 		r1, 0x42
+	exor 		r1, r0
+	out		r1, 0x42
+	Retie				; returning to command before interrupt
+	
+
+.CSEG
+.ORG	0x3FF				; interrupt down here
+	brn		int_handler
+
+
+#When the button is pressed, the program will light up the LEDs that were turned on before 
+#the duplicate switches were detected and return to the previous functionality of toggling the LEDs as before.
+
+.CSEG
+.ORG	0x01
+
+main:
+	mov 	r2, 0x00
+	sei
+loop:
+	brn loop
+
+int_handler:
+	in		r0, 0x9A
+	in 		r1, 0x42
+	cmp		r1, r2
+	BREQ		wait_btn
+	mov		r2, r0
+ 	exor 		r1, r0
+	out		r1, 0x42
+	retie
+	
+Wait_btn:
+	OUT		wait_btn, 0x42
+	in		r3, 0x9B
+	and		r3, 0x01
+	cmp		r3, 0x01
+	brne		wait_btn
+	mov 		r2, 0x00
+	brn		int_handler
+
+.CSEG
+.ORG	0x3FF
+	brn		int_handler
+
+
+

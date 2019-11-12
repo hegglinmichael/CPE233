@@ -1,0 +1,82 @@
+#In this assignment, our team separated a BCD number into the ones, tens, and hundreds place.  
+#This was achieved by subtracting 10 until there was a remainder.  
+#That remainder was either the ones, tens, and hundreds place, which was then outputted.
+
+.CSEG
+.ORG 0x20
+
+input:
+	IN		r1, 0x9A
+	CALL		divideBy10
+	OUT		r1, 0x43
+	
+	MOV		r1, r2
+	MOV		r2, 0x00
+	CALL		divideBy10
+	OUT		r1, 0x42
+	
+	MOV		r1, r2
+	MOV		r2, 0x00
+	CALL		divideBy10
+	OUT		r1, 0x41
+	
+
+divideBy10:
+	CMP		r1, 0x0A		; comparing value to 0x0A
+	BRCS		doneDividing	; if value is less than 0x0A branching
+	SUB 		r1, 0x0A		; subtracting 0x0A from initial val
+	ADD		r2, 0x01		; adding 0x01 for every subtract
+	BRN		divideBy10
+	
+doneDividing:
+	RET
+
+
+#In this assignment, our team multiplied two 8-bit numbers together to create a 16-bit number.  
+#We then separated the number back into to 8-bit outputs.  To achieve this we added one number x,
+# the other number y amount of times.  The carry out was then added as well to form the high 8 bits.
+
+.CSEG
+.ORG 0x20
+
+input:
+	IN		r1, 0x9A
+	IN		r2, 0x9A
+	CALL	multiply
+	OUT		r3, 0x42
+	OUT		r4, 0x41
+	
+	done:
+	brn done
+
+multiply:
+	CMP		r1, 0x00		; comparing value to 0
+	BREQ	mul_done		; check done
+	SUB 	r1, 0x01		; decrement counter
+	
+	push 	r1				; save context
+	push 	r2
+	
+	mov 	r1, r3			; pass result 
+	mov 	r2, r2			; pass value to add to result
+	call 	add_CarryOut
+	mov 	r5, r2			; save overflow in r5
+	mov 	r3, r1			; save result in r3
+	
+	pop		r2				; return context
+	pop 	r1
+	
+	ADD 	r4, r5			; adding overflow
+	BRN		multiply
+	
+mul_done:
+	RET
+
+add_CarryOut: ; result r1, overflow r2
+	add r1, r2
+	mov r2, 0x00
+	brcc cfc
+	mov r2, 0x01
+cfc:
+	ret
+

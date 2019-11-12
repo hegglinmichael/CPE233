@@ -1,0 +1,35 @@
+#The program reads three values from port 0x30 and sums them before writing the value to output 0x40.
+
+.EQU OUTPUT_PORT = 0x40 ; output port
+.CSEG
+.ORG 0x01
+
+main:
+	IN		r1, 0x30
+	IN		r2, 0x30
+	IN		r3, 0x30
+
+	MOV 	r4, 0x00
+	ADD		r4, r1
+	ADD		r4, r2
+	ADD		r4, r3
+	
+	OUT		r4, OUTPUT_PORT
+	BRN		main
+
+#This program takes an RC signed input from port 0x30, 
+#changes the sign of that input, and outputs the input with the opposite sign in RC format.
+
+.EQU OUTPUT_PORT = 0x40 ; output port
+.CSEG
+.ORG 0x01
+
+main:
+	IN		r1, 0x30
+
+	EXOR		r1, 0xFF		; exor with all 1s is the same as a ~ operation
+	ADD		r1, 0x01		; adding 1 is the second part of 2’s complement
+	
+	OUT		r1, OUTPUT_PORT
+	BRN		main
+

@@ -1,0 +1,62 @@
+#In this lab, the program takes an input number, divides that number by 3, 
+#and outputs a number and a remainder.  This is done by subtracting from the 
+#original number until a value of less than 3 is reached.
+
+.EQU OUTPUT_PORT = 0x42 ; output port
+.EQU REMAINDER_PORT = 0x043
+.CSEG
+.ORG 0x01
+
+main:
+	IN		r1, 0x9A
+	MOV		r2, 0x00
+	
+loop:
+	CMP		r1, 0x03	; comparing value to 0x03
+	BRCS		done		; if value is less than 0x03 branching
+	SUB 		r1, 0x03	; subtracting 0x03 from initial val
+	ADD		r2, 0x01	; adding 0x01 for every subtract
+	BRN		loop
+	
+done:
+	OUT 		r2, OUTPUT_PORT
+	OUT		r1, REMAINDER_PORT
+
+
+#In this lab, the program takes 2 input numbers, divides the first number by the second, 
+#and outputs a number and a remainder.  This is done by subtracting the second number from 
+#the original number until a value of less than the second number is reached.  
+#Once a value of less than the second number is reached it can no longer be divided and is a remainder.
+
+.EQU OUTPUT_PORT = 0x42 ; output port
+.EQU REMAINDER_PORT = 0x043
+.CSEG
+.ORG 0x01
+
+main:
+
+	IN		r1, 0x9A
+	IN		r2, 0x9A
+	MOV		r3, 0x00
+	CMP 		r2, 0x00	; testing if the divisor is 0
+	BREQ		error		; branching if divisor is 0
+	
+loop:
+	CMP		r1, r2		; comparing if r1 is now less than r2
+	BRCS		done		; branching if less than
+	SUB 		r1, r2		; subtracting r2 from r1
+	ADD		r3, 0x01	; adding 1 for every subtract
+	BRN		loop
+	
+done:
+	OUT 		r3, OUTPUT_PORT
+	OUT		r1, REMAINDER_PORT
+	
+loopDone:
+	BRN		loopDone	; looping when done
+
+error:
+	MOV		r0, 0x00
+	OUT		r0, OUTPUT_PORT
+	OUT		r0, REMAINDER_PORT
+

@@ -1,0 +1,63 @@
+#In this software assignment, our team used the stack. 
+#Numbers were pushed onto the stack in the order they were inputted.  
+#Then when 0xFF was inputted, the stack outputted ever number inputted in reverse order.  
+#This was achieved by popping items off the stack.
+
+.CSEG
+.ORG 0x20
+
+main:
+	MOV 	R0, 0xFF
+	PUSH	R0
+
+INPUT_LOOP:
+	IN 		R0, 0x9A
+	CMP		R0, 0xFF
+	BREQ	UNLOAD
+	PUSH 	R0
+	BRN		INPUT_LOOP
+	
+UNLOAD:
+	POP		R0
+	CMP		R0, 0XFF
+	BREQ	COMPLETE
+	OUT		R0, 0X42
+	BRN		UNLOAD
+
+COMPLETE:
+	BRN		COMPLETE
+
+
+#In this software assignment, our team used the stack.  
+#Numbers were pushed onto the stack in the order they were inputted.  Then when 0xFF was inputted, 
+#the stack outputted ever number inputted in the same order.  
+#This was achieved by using a pointer for the stack, and loading from the stack for every number inputted.
+
+.CSEG
+.ORG 0x20
+
+MAIN:
+	MOV 	R1, 0X00
+
+INPUT_LOOP:
+	IN 		R0, 0x9A
+	CMP		R0, 0xFF
+	BREQ	TEMP_UNLOAD
+	PUSH 	R0
+	ADD		R1, 0X01
+	BRN		INPUT_LOOP
+	
+TEMP_UNLOAD:
+	MOV		R3, 0XFF
+	
+UNLOAD:
+	CMP		R1, 0X00
+	BREQ	COMPLETE
+	LD		R0, (R3)
+	OUT		R0, 0X42
+	SUB		R1, 0X01
+	SUB		R3, 0X01
+	BRN		UNLOAD
+
+COMPLETE:
+	BRN		COMPLETE

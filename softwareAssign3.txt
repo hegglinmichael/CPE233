@@ -1,0 +1,64 @@
+#In this lab, we took an 8-bit unsigned binary value as input.  We then slit that 8-bit value into two 4-bit values.  
+#We then multiplied the 4-bit values together, and outputted on port 0x42.
+
+.EQU OUTPUT_PORT = 0x42 ; output port
+.CSEG
+.ORG 0x01
+
+
+main:
+	IN		r1, 0x9A
+
+	MOV 	r2, r1
+	AND 	r1, 0x0F
+	ASR		r2
+	ASR		r2
+	ASR		r2
+	ASR		r2
+	AND		r2, 0x0F
+	MOV		r3, 0x00
+
+multiply:
+	CMP		r2, 0x00
+	BREQ 	done
+	ADD		r3, r1
+	SUB		r2, 0x01
+	BRNE	multiply
+	
+done:
+	OUT 	r3, 0x42
+
+
+
+#The objective of this lab was to take in a value, delay .5 seconds, and output on port 0x42. 
+# The time delay was achieved through nested loops.
+
+.EQU OUTPUT_PORT = 0x42 ; output port
+.CSEG
+.ORG 0x01
+
+
+main:
+	IN		r4, 0x9A
+	MOV		r0, 0x41
+	
+wait:
+	CMP 	r0, 0x00
+	BREQ	done
+	SUB		r0, 0x01
+	MOV		r1, 0xFF
+	
+loop1:
+	CMP		r1, 0x00
+	BREQ	wait
+	SUB		r1, 0x01
+	MOV		r2, 0xFF
+	
+loop2:
+	SUB		r2, 0x01
+	BREQ	loop1
+	BRN		loop2
+	
+done:
+	OUT		r4, 0x42
+

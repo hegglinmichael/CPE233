@@ -1,0 +1,66 @@
+# In this lab, the objective was to read an input from port 0x30.  
+# If this input was greater than or equal to 128, it was shifted right twice.  
+# If the input was less than 128, the input was shifted right once.  The final answer was then outputted on port 0x42.
+
+
+
+.EQU OUTPUT_PORT = 0x42 ; output port
+.CSEG
+.ORG 0x01
+
+
+main:
+	IN		r1, 0x30
+	CMP		r1, 0x80	; 
+	BRCC	val_greater128	; check if carry flag is cleared (if dest >= 128, branch)
+	
+	CLC				; clear carry flag
+	LSL		r1		; perform logical left shift
+	OUT		r1, OUTPUT_PORT
+	BRN 	main
+
+val_greater128:
+	
+	ASR		r1		; performing arithmetic shift right
+	ASR		r1		; performing arithmetic shift right
+	OUT 	r1, OUTPUT_PORT
+	BRN		main
+
+
+#In this assignment we took a value from port 30, and decided if it was a multiple of 4.  
+#If it was we took the opposite of it and outputted it on port 40.  If it was not a multiple of 4, 
+#we decided if it was a multiple of 2.  If it was not we added 17, divided by 2, and outputted the number. 
+# If it was a multiple of 2, then we subtracted 1 and outputted it.
+
+.EQU OUTPUT_PORT = 0x42 ; output port
+.CSEG
+.ORG 0x01
+
+
+main:
+	IN		r1, 0x30
+
+	MOV		r2, r1
+	AND 		r2, 0x03			; r2 % 4
+	BREQ		val_mult4			; branch if z==0 (r2 % 4 == 0)
+	
+	AND		r2, 0x01			; ANDing to check if value is odd
+	BRNE		val_odd			; branching if the z flag is 0
+	
+	SUB 		r1, 0x01			; subtracting 1 from number
+	OUT		r1, OUTPUT_PORT		; output value
+	BRN 		main
+
+val_mult4:
+	
+	EXOR		r1, 0xFF			; XOR to invert the input number
+	OUT 		r1, OUTPUT_PORT		; output value
+	BRN		main
+
+val_odd:
+	
+	ADD 		r1, 0x11			; adding 17 to the input number
+	ASR		r1				; right shift (dividing by 2)
+	OUT		r1, OUTPUT_PORT
+	BRN		main
+

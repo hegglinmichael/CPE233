@@ -1,0 +1,132 @@
+#In this lab assignment, we took the first 14 numbers in the fibonacci sequence and computed 
+#the differences between them.  To be specific, we computed the difference between the current 
+#index, and an index 3 in front of it.  After this difference was computed, it was outputted to port 0x42.
+
+
+.EQU FIB_LEN = 0x0e 	; array length
+.EQU OUT_P = 0x42 		; output port
+
+.DSEG
+.ORG 0x01
+
+FIB: .DB 0x00, 0x01, 0x01, 0x02, 0x03, 0x05, 0x08, 0x0c, 0x15, 0x22, 0x37, 0x59, 0x90, 0xe9	; fib array declared
+
+.CSEG
+.ORG 0x20
+
+; In this loop we create an index pointer for our array
+main:
+	MOV 		r1, FIB
+	SUB		r1, FIB_LEN
+	MOV		r0, r1 		
+; here the fib values are loaded, and subtracted from each other in order to get the values
+fib_loop:
+	LD 		r1, (r0) 
+	MOV		r3, r0
+	ADD		r3, 0x03
+	LD		R2, (R3)
+	SUB		R2, R1
+	OUT		R2, OUT_P
+	ADD		r0, 0x01
+	
+	CMP		R3, 0X0D
+	BREQ	END
+	BRN		fib_loop
+; endlessly loops at the end
+END:
+	BRN		END
+
+
+# In this assignment, we read in 10 values from a port.  
+#Next the values are sorted through a series of loops.  This is done by comparing the current index, 
+#and the index in front of it.  It does this sort n times(n being the length of the array).  
+#Then this program outputs the list, now in least to greatest, to port 0x42.
+
+.EQU ARR_LEN = 0x0A 	; arraylength
+.EQU IN_P = 0X9A		; INPUT PORT
+.EQU OUT_P = 0x42 		; output port
+
+.DSEG
+.ORG 0x01
+
+ARR: .BYTE 0x0A	; array declared
+
+.CSEG
+.ORG 0x20
+
+; BELOW CODE CREATES AN INDEX FOR THE ARRAY
+main:
+	MOV 		r1, ARR
+	SUB		r1, ARR_LEN
+	MOV		r0, r1 		
+
+; TAKES IN 10 NUMBERS INTO THE ARRAY
+input_loop:
+	CMP		R0, ARR
+	BREQ		sort
+	
+	IN		R1, IN_P
+	ST		R1, (R0)
+	ADD		R0, 0x01
+	
+	BRN		input_loop
+
+; STARTS SORTING THE NUMBERS
+sort:
+	MOV 		r1, ARR
+	SUB		r1, ARR_LEN
+	MOV		r0, r1 
+	
+; BELOW CODE CREATES AN INDEX FOR THE ARRAY
+sort_loop1:
+	MOV		R2, R1
+	MOV		R3, R2
+	ADD		R3, 0x01
+
+; STARTS SORTING THE NUMBERS BY COMPARING 2 NEXT TO EACH OTHER
+sort_loop2:
+	LD		R4, (R2)
+	LD		R5, (R3)
+	CMP		R4, R5
+	BRCC		swap
+	BRN		continue
+
+; SWAPS IF IF THE BEFORE ELEMENT IS GREATER
+swap:
+	ST		R4, (R3)
+	ST		R5, (R2)
+	
+; CONTINUATION OF LOOP ONE
+; ADDS TO INDEX AND CONTINUES TO SORT
+continue:
+	ADD		R2, 0X01
+	MOV 		R3, R2
+	ADD 		R3, 0x01
+	CMP		R3, ARR
+	BRNE		sort_loop2
+	
+	;
+	ADD		R0, 0X01
+	CMP		r0, ARR
+	BREQ		END
+	BRN		sort_loop1
+
+; OUTPUTS ONE AT A TIME SORTED ARRAY
+END:
+	MOV 		r1, ARR
+	SUB		r1, ARR_LEN
+	MOV		r0, r1 
+	
+OUT_LOOP:
+	LD		R6, (R0)
+	OUT		R6, 0X42
+	ADD		R0, 0X01
+	CMP		R0, ARR
+	BREQ	DONE
+	BRN		OUT_LOOP
+	
+	
+; LOOPS ENDLESSLY WHEN DONE
+DONE:	
+	BRN 	DONE
+
